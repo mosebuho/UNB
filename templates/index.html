@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+{% load socialaccount %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="Uo6wtUJ5JJuq7oeydXzIFuUIS9DJFzY4M9ZicU04Bgk" />
+    <meta name="naver-site-verification" content="d664d44daa134288801fdd59dfea8046759604c6" />
+    <meta property="og:type" content="website">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <meta name="author" content="포밀덕">
+    <meta name="keywords" content="포밀덕, 밀리터리, 밀덕, 군사, 군대, 군갤, 군사뉴스, 국방뉴스, 국방신문, 군사커뮤니티, 밀덕커뮤니티, 밀덕사이트, 군사사이트">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="포밀덕">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8572587507451544"
+        crossorigin="anonymous"></script>
+
+    {% block head %}
+    <title>포밀덕</title>
+    <meta name="description" content="밀덕을 위한 군사 커뮤니티 포밀덕">
+    <meta name="title" content="포밀덕">
+    <meta property="og:title" content="포밀덕">
+    <meta property="og:description" content="밀덕을 위한 군사 커뮤니티 포밀덕">
+    <meta property="og:url" content="https://4millduk.com/">
+    {% endblock head %}
+
+</head>
+
+<body>
+    <header>
+        <a href="/">
+            <img src="/static/logo.png" style="image-rendering:-webkit-optimize-contrast;width:100%;">
+        </a>
+        <div style="width:100%;background:#f1f1f1;"></div>
+    </header>
+    <main>
+        <article>
+            {% block board %}
+            <section id="search">
+                <select id="S">
+                    <option value="W">전체</option>
+                    <option value="N">소식</option>
+                    <option value="C">정보</option>
+                    <option value="F">자유</option>
+                    <option value="A">공지</option>
+                </select>
+                <input onchange="get_z()" value="{{z}}" id="Z" placeholder="검색어를 입력해주세요.">
+                <button id="go_search">
+                    검색
+                </button>
+                <script>
+                    if ("{{z}}" != "") {
+                        document.getElementById('S').value = "{{s}}";
+                    }
+                    function get_z() {
+                        $("#go_search").click(function () {
+                            var s = document.getElementById("S").value;
+                            var z = document.getElementById("Z").value;
+                            if (z.length <= 1) {
+                                alert("두글자 이상의 단어를 검색해주세요.")
+                            } else {
+                                location.href = "?z=" + z + "&s=" + s;
+                            }
+                        });
+                    }
+                </script>
+            </section>
+            <section id="list">
+                <ul id="category">
+                    <li id="W">
+                        {% if z == "" %}
+                        <a href="/" id="W">
+                            {% else %}
+                            <a href="?z={{z}}&s=W" id="W">
+                                {% endif %}
+                                <i class="fa-solid fa-earth-americas"></i> 전체
+                            </a>
+                    </li>
+                    <li>
+                        {% if z == "" %}
+                        <a href="?s=N" id="N">
+                            {% else %}
+                            <a href="?z={{z}}&s=N" id="N">
+                                {% endif %}
+                                <i class="fa-solid fa-bullhorn"></i> 소식
+                            </a>
+                    </li>
+                    <li>
+                        {% if z == "" %}
+                        <a href="?s=C" id="C">
+                            {% else %}
+                            <a href="?z={{z}}&s=C" id="C">
+                                {% endif %}
+                                <i class="fa-solid fa-square-poll-horizontal"></i> 정보
+                            </a>
+                    </li>
+                    <li>
+                        {% if z == "" %}
+                        <a href="?s=F" id="F">
+                            {% else %}
+                            <a href="?z={{z}}&s=F" id="F">
+                                {% endif %}
+                                <i class="fa-solid fa-comments"></i> 자유
+                            </a>
+                    </li>
+                    <li>
+                        {% if z == "" %}
+                        <a href="?s=A" id="A">
+                            {% else %}
+                            <a href="?z={{z}}&s=A" id="A">
+                                {% endif %}
+                                <i class="fa-solid fa-circle-info"></i> 공지
+                            </a>
+                    </li>
+                    {% if request.user.is_authenticated %}
+                    <button>
+                        <a href="{% url 'board:mil_create' %}">
+                            <i class="fa-solid fa-feather"></i> 글쓰기
+                        </a>
+                    </button>
+                    {% else %}
+                    <button onclick="alert('로그인이 필요한 기능입니다.')">
+                        <i class="fa-solid fa-feather"></i> 글쓰기
+                    </button>
+                    {% endif %}
+                </ul>
+                <script>
+                    $(document).ready(function () {
+                        var s = "{{s}}"
+                        if (s == "" || s == "W") {
+                            $("#W a").css("color", "#606060");
+                            $("#W i").css("fill", "#606060");
+                        }
+                        else {
+                            $("#" + s).css("color", "#606060");
+                            $("#" + s + "  i").css("fill", "#606060");
+                        }
+                    });
+                </script>
+                {% if page_obj %}
+                <table>
+                    <thead>
+                        <tr style="background:#fbfbfb;border-radius:8px;">
+                            <th style="border-top-left-radius:8px;">번호</th>
+                            <th>분류</th>
+                            <th>제목</th>
+                            <th>조회</th>
+                            <th>추천</th>
+                            <th style="border-top-right-radius:8px;">작성일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in page_obj %}
+                        <tr>
+                            <td id="nu">{{ i.id }}</td>
+                            <td id="ca" style="font-weight:bold;font-size:1.3rem;">
+                                {% if i.category == "N" %}
+                                <i class="fa-solid fa-bullhorn"></i> 소식
+                                {% elif i.category == "C" %}
+                                <i class="fa-solid fa-square-poll-horizontal"></i> 정보
+                                {% elif i.category == "F" %}
+                                <i class="fa-solid fa-comments"></i> 자유
+                                {% else %}
+                                <i class="fa-solid fa-circle-info"></i> 공지
+                                {% endif %}
+                            </td>
+                            <td id="ti" style="text-align:left;">
+                                <a href="{% url 'board:mil_detail' i.pk %}" target="_self">
+                                    {% if "img" in i.content %}
+                                    <i class="fa-solid fa-image"></i>
+                                    {% else %}
+                                    <i class="fa-solid fa-file-lines"></i>
+                                    {% endif %}
+                                    {{ i.title|truncatechars:45 }} <span id="cmt_count">({{i.comment_set.count}})</span>
+                                    {% if i.new %}
+                                    <span id="new">N</span>
+                                    {% endif %}
+                                </a>
+                            </td>
+                            <td id="vi">{{ i.view }}</td>
+                            <td id="li">{{ i.like }}</td>
+                            <td id="da">{{ i.date_str }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div>
+                    글이 존재하지 않습니다.
+                </div>
+                {% endif %}
+                {% if page_obj %}
+                <ul id="page-list">
+                    {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li>{{ i }}</li>
+                    {% elif i > page_obj.number|add:'-7' and i < page_obj.number|add:'7' %} <li>
+                        {% if z == "" %}
+                        {% if s == "" %}
+                        <a href="?page={{ i }}">{{ i }}</a>
+                        {% else %}
+                        <a href="?s={{s}}&page={{ i }}">{{ i }}</a>
+                        {% endif %}
+                        {% else %}
+                        <a href="?z={{z}}&s={{s}}&page={{ i }}">{{ i }}</a>
+                        {% endif %}
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                </ul>
+                {% endif %}
+            </section>
+            {% endblock board %}
+        </article>
+        <aside>
+            <section id="login">
+                {% if request.user.is_authenticated %}
+                <form action="{% url 'account_logout' %}" method="post">
+                    {% csrf_token %}
+                    <button id="logout" type="submit">로그아웃</button>
+                </form>
+                {% else %}
+                <form action="{% provider_login_url 'naver' %}" method="post">
+                    {% csrf_token %}
+                    <button id="naver" type="submit">
+                        <img style="image-rendering: -webkit-optimize-contrast;" src="/static/naver.png">
+                        <span style="color:#fff">네이버 로그인</span>
+                    </button>
+                </form>
+                <form action="{% provider_login_url 'kakao' %}" method="post">
+                    {% csrf_token %}
+                    <button id="kakao" type="submit">
+                        <img style="image-rendering: -webkit-optimize-contrast;" src="/static/kakao.png">
+                        <span>카카오 로그인</span>
+                    </button>
+                </form>
+                <form action="{% provider_login_url 'google' %}" method="post">
+                    {% csrf_token %}
+                    <button id="google" type="submit">
+                        <img style="image-rendering: -webkit-optimize-contrast;" src="/static/google.png">
+                        <span>구글 로그인</span>
+                    </button>
+                </form>
+                {% endif %}
+            </section>
+            <section id="best">
+                <div>
+                    <i class="fa-solid fa-fire"></i> 인기 글
+                </div>
+                <ul>
+                    {% for i in hot %}
+                    <li>
+                        <a href="{% url 'board:mil_detail' i.id %}">
+                            <i class="fa-solid fa-fire"></i>
+                            <span>
+                                {% if i.category == "N" %}
+                                <i class="fa-solid fa-bullhorn"></i> 소식
+                                {% elif i.category == "C" %}
+                                <i class="fa-solid fa-square-poll-horizontal"></i> 정보
+                                {% elif i.category == "F" %}
+                                <i class="fa-solid fa-comments"></i> 자유
+                                {% else %}
+                                <i class="fa-solid fa-circle-info"></i> 공지
+                                {% endif %}
+                            </span>
+                            {{ i.title|truncatechars:16 }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            <div style="width:100%;height:300px;background:#f1f1f1;">
+            </div>
+        </aside>
+    </main>
+    <footer>
+        Copyright 2022. 4MILLDUK all rights reserved.
+    </footer>
+</body>
+
+</html>

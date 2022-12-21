@@ -1,0 +1,356 @@
+{% extends "index.html" %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/detail.css">
+<title>{{ board.title }}</title>
+<meta name="description" content="{{ board.content|safe|striptags|truncatechars:55 }}">
+<meta name="title" content="{{ board.title }} - 포밀덕">
+<meta property="og:title" content="{{board.title}} - 포밀덕">
+<meta property="og:description" content="{{ board.content|safe|striptags|truncatechars:55 }}">
+<meta property="og:url" content="https://4millduk.com/mil/{{board.id}}/">
+{% endblock head %}
+
+{% block board %}
+<input type="hidden" value="{{board.view_count}}" id="view">
+<section id="detail">
+    <h1>{{board.title}}</h1>
+    <div class="title_sub">
+        <i class="fa-regular fa-eye" style="margin:0;"></i> {{board.view}}
+        <i class="fa-regular fa-thumbs-up"></i> <span id="title_like_count"> {{board.like}} </span>
+        <i class="fa-regular fa-comment"></i> <span id="title_cmt_count"> {{board.comment_set.count}} </span>
+        <i class="fa-regular fa-clock"></i> {{board.date_str}}
+        {% if request.user.id == board.writer.id %}
+        <span id="custom">
+            <button><a href="{% url 'board:mil_update' board.id %}">수정</a></button>
+            <button onclick="del()">삭제</button>
+        </span>
+        {% endif %}
+    </div>
+    <script>
+        function del() {
+            var warning = confirm("게시글을 삭제할 경우 복구가 불가능합니다.\n정말 삭제하시겠습니까?");
+            if (warning == true) {
+                window.location.href = "{% url 'board:mil_delete' board.id %}"
+            }
+        }
+    </script>
+    <div class="content">
+        {{board.content|safe}}
+    </div>
+    <div style="background:#f8f8f8;height:100px;"></div>
+    <div id="join">
+        {% if not request.user.is_authenticated %}
+        <button id="like" onclick="notlogin()">
+            <i class="fa-regular fa-thumbs-up"></i>
+            <span id="like_count">{{board.like}}</span>
+        </button>
+        {% elif request.user in board.likes.all %}
+        <button id="like" onclick="like()">
+            <i class="fa-regular fa-thumbs-up"></i>
+            <span id="like_count">{{board.like}}</span>
+        </button>
+        <script>
+            function like() {
+                alert("추천은 게시글당 한 번씩 가능합니다.");
+            }
+        </script>
+        {% else %}
+        <button id="like" onclick="like()">
+            <i class="fa-regular fa-thumbs-up"></i>
+            <span id="like_count">{{board.like}}</span>
+        </button>
+        <script>
+            function like() {
+                $.ajax({
+                    url: "{% url 'board:like' %}",
+                    type: "POST",
+                    data: {
+                        pk: "{{board.id}}",
+                        csrfmiddlewaretoken: "{{csrf_token}}",
+                    },
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.msg == "exists") {
+                            alert("추천은 게시글당 한 번씩 가능합니다.");
+                        }
+                        else if (response.msg == "notlogin") {
+                            notlogin();
+                        }
+                        else {
+                            $("#like_count").html(response.like);
+                            $("#title_like_count").html(response.like);
+                            $("#like").attr("onclick", "alert('추천은 게시글당 한 번씩 가능합니다.')")
+                        }
+                    },
+                });
+            }
+        </script>
+        {% endif %}
+        <button id="move_cmt">
+            <i class="fa-regular fa-comment"></i> <span id="cmt_count">{{board.comment_set.count}}</span>
+        </button>
+        <script>
+            $("#move_cmt").click(function () {
+                document.getElementById('cmt_content').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        </script>
+    </div>
+</section>
+<section id="comment">
+    <ul id="cmt_list">
+        {% for i in board.comment_set.all %}
+        {% if i.parents == null %}
+        <li id={{i.id}}>
+            <p style="white-space:pre-wrap;" id="{{i.id}}content">{{i.content}}</p>
+            <div class="cmt_sub"><i class="fa-regular fa-clock" style="margin:0;"></i> {{i.date_str}}
+                <button id="{{i.id}}recmt" onclick="recmt_create('{{i.id}}')">
+                    <i class="fa-regular fa-comment"></i>
+                    <span id="{{i.id}}recmt_count">{{i.recomment.count}}</span>
+                </button>
+                {% if request.user.id == i.writer.id %}
+                <span id="{{i.id}}custom">
+                    <button onclick="cmt_custom('update', '{{i.id}}')">수정</button>
+                    <button onclick="cmt_custom('delete', '{{i.id}}')">삭제</button>
+                </span>
+                {% endif %}
+            </div>
+        </li>
+        {% for o in i.recomment.all %}
+        <li id={{o.id}}({{i.id}}re)>
+            <p style="white-space:pre-wrap;" id="{{o.id}}content">{{o.content}}</p>
+            <div class="cmt_sub"><i class="fa-regular fa-clock" style="margin:0;"></i> {{i.date_str}}
+                </button>
+                {% if request.user.id == i.writer.id %}
+                <span id="{{o.id}}custom">
+                    <button onclick="cmt_custom('update', '{{o.id}}')">수정</button>
+                    <button onclick="cmt_custom('delete', '{{o.id}}')">삭제</button>
+                </span>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% if request.user.is_authenticated %}
+    <script>
+        function recmt_create(id) {
+            $("#" + id).after("<li id='recmtzone' ><textarea id='recmt_content'style='width:0;box-sizing:border-box;'placeholder='댓글을 입력해주세요.'></textarea>" +
+                "<div><span><button id='recmt_done'>등록</button> <button id='recmt_cancel'>취소</button></span></div></li>")
+            $("#recmtzone").css({ "background": "#f1f1f1", "border-top": "1px solid #e5e5e5", "border-bottom": "1px solid #e5e5e5" });
+            $("#recmtzone div").css("overflow", "hidden");
+            $("#recmt_content").animate({ width: '100%', height: '80px' });
+            $("button[id!='recmt_done']button[id!='recmt_cancel']").attr("disabled", true)
+            $("#recmt_cancel").click(function () {
+                $("#recmtzone").fadeOut(400, function () { $(this).remove(); });
+                $("#recmt_content").animate({ width: '0' });
+                $("button").removeAttr("disabled");
+            });
+            $("#recmt_done").click(function () {
+                if ($("#recmt_content").val().trim() == "") { alert('댓글을 입력해주세요.'); }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: "{% url 'board:cmt_create' %}",
+                        data: {
+                            Pid: id,
+                            pk: "{{board.id}}",
+                            content: $("#recmt_content").val(),
+                            csrfmiddlewaretoken: '{{csrf_token}}',
+                        },
+                        success: function (response) {
+                            if (response.msg == "notlogin") {
+                                alrt("로그인이 필요한 기능입니다.")
+                            } else {
+                                $("#cmt_count").html(response.cmt_count);
+                                $("#title_cmt_count").html(response.cmt_count);
+                                $("#" + id + "recmt_count").html(response.recmt_count);
+                                $("#recmtzone").fadeOut(400, function () { $(this).remove(); });
+                                $("#recmt_content").animate({ width: '0' });
+                                $("button").removeAttr("disabled");
+                                if ($("[id*='(" + id + "re)']").val() == undefined) {
+                                    $("#" + id).after(
+                                        "<li id='" + response.cmt_id + "(" + id + "re)'>" +
+                                        "<p style='white-space:pre-wrap;' id='" + response.cmt_id + "content'>" + response.content + "</p>" +
+                                        "<div class='cmt_sub'><i class='fa-regular fa-clock' style='margin:0;'></i> " + response.date_str +
+                                        "</button><span id='" + response.cmt_id + "custom'>" +
+                                        "<button onclick=cmt_custom('update'" + ",'" + response.cmt_id + "')>수정</button>" +
+                                        " <button onclick=cmt_custom('delete'" + ",'" + response.cmt_id + "')>삭제</button>" +
+                                        "</span></div></li>"
+                                    )
+                                } else {
+                                    $("[id*='(" + id + "re)']").last().after(
+                                        "<li id='" + response.cmt_id + "(" + id + "re)'>" +
+                                        "<p style='white-space:pre-wrap;' id='" + response.cmt_id + "content'>" + response.content + "</p>" +
+                                        "<div class='cmt_sub'><i class='fa-regular fa-clock' style='margin:0;'></i> " + response.date_str +
+                                        "</button><span id='" + response.cmt_id + "custom'>" +
+                                        "<button onclick=cmt_custom('update'" + ",'" + response.cmt_id + "')>수정</button>" +
+                                        " <button onclick=cmt_custom('delete'" + ",'" + response.cmt_id + "')>삭제</button>" +
+                                        "</span></div></li>"
+                                    )
+                                }
+                                $("#" + response.cmt_id + "re").hide().fadeIn(400);
+                            }
+                        },
+                    });
+                }
+            });
+        }
+
+    </script>
+    {% else %}
+    <script>
+        function recmt_create(id) {
+            $("#" + id).after("<li id='recmtzone' ><textarea id='recmt_content'style='width:0;box-sizing:border-box;'placeholder='댓글을 입력해주세요.' onclick='notlogin()')></textarea>" +
+                "<div><span><button id='recmt_done'onclick='notlogin()'>등록</button> <button id='recmt_cancel'>취소</button></span></div></li>")
+            $("#recmtzone").css({ "background": "#f1f1f1", "border-top": "1px solid #e5e5e5", "border-bottom": "1px solid #e5e5e5" });
+            $("#recmtzone div").css("overflow", "hidden");
+            $("#recmt_content").animate({ width: '100%', height: '80px' });
+            $("button[id!='recmt_done']button[id!='recmt_cancel']").attr("disabled", true)
+            $("#recmt_cancel").click(function () {
+                $("#recmtzone").fadeOut(400, function () { $(this).remove(); });
+                $("#recmt_content").animate({ width: '0' });
+                $("button").removeAttr("disabled");
+            });
+        }
+    </script>
+    {% endif %}
+    <script>
+        function cmt_custom(value, id) {
+            if (value == "update") {
+                var text = document.getElementById(id + 'content').textContent;
+                $("#" + id + "content").html("<textarea id='edit_cmt' style='width:0;'>" + text + "</textarea>");
+                $("#" + id + "custom").html("<button id='Udone'>수정</button> <button id='Ucancel'>취소</button>");
+                $("#edit_cmt").animate({ width: '100%', height: '80px' });
+                $("#edit_cmt").css("box-sizing", "border-box");
+                $("button[id!='Udone']button[id!='Ucancel']").attr("disabled", true);
+                $("#" + id + "custom").html("<button id='Udone'>확인</button> <button id='Ucancel'>취소</button>");
+                if (document.getElementById(id) == null) {
+                    $("li[id^=" + id + "]").css({ "background": "#f1f1f1", "border-top": "1px solid #e5e5e5", "border-bottom": "1px solid #e5e5e5" });
+                } else {
+                    $("#" + id).css({ "background": "#f1f1f1", "border-top": "1px solid #e5e5e5", "border-bottom": "1px solid #e5e5e5" });
+                }
+                $("#Ucancel").click(function () {
+                    $("#" + id + "content").fadeOut(400, function () { $(this).replaceWith("<p style='white-space:pre-wrap;' id='" + id + "content'>" + text + "</p>"); });
+                    if (document.getElementById(id) == null) {
+                        $("li[id^=" + id + "]").css({ "background": "#f8f8f8", "border-top": "1px solid #f1f1f1", "border-bottom": "none" });
+                    } else {
+                        $("#" + id).css({ "background": "inherit", "border-top": "1px solid #f1f1f1", "border-bottom": "none" });
+                    }
+                    $("#edit_cmt").animate({ width: '0' });
+                    $("#" + id + "custom").html("<button onclick='cmt_custom(" + '"update"' + ", " + id + ")'>수정</button> <button onclick='cmt_custom(" + '"delete"' + ", " + id + ")'>삭제</button>");
+                    $("button").removeAttr("disabled");
+                });
+                $("#Udone").click(function () {
+                    if ($("#edit_cmt").val().trim() == "") { alert('댓글 내용을 입력해주세요.'); }
+                    else {
+                        $.ajax({
+                            type: "POST",
+                            url: "{% url 'board:cmt_update' %}",
+                            data: {
+                                cmt_id: id,
+                                edit_cmt: $("#edit_cmt").val(),
+                                csrfmiddlewaretoken: "{{csrf_token}}",
+                            },
+                            success: function (response) {
+                                if (response.msg == "no") {
+                                    alert("댓글을 수정할 권한이 없습니다.")
+                                } else {
+                                    $("#edit_cmt").animate({ width: '0' });
+                                    $("#" + id + "content").fadeOut(400, function () { $(this).replaceWith("<p style='white-space:pre-wrap;' id='" + id + "content'>" + response.content + "</p>"); });
+                                    if (document.getElementById(id) == null) {
+                                        $("li[id^=" + id + "]").css({ "background": "#f8f8f8", "border-top": "1px solid #f1f1f1", "border-bottom": "none" });
+                                    } else {
+                                        $("#" + id).css({ "background": "inherit", "border-top": "1px solid #f1f1f1", "border-bottom": "none" });
+                                    }
+                                    $("#" + id + "custom").html("<button onclick='cmt_custom(" + '"update"' + ", " + id + ")'>수정</button> <button onclick='cmt_custom(" + '"delete"' + ", " + id + ")'>삭제</button>");
+                                    $("button").removeAttr("disabled");
+                                }
+                            },
+                        });
+                    }
+                });
+            } else {
+                var delete_warning = confirm("댓글을 삭제할 경우 복구가 불가능합니다.\n정말 삭제하시겠습니까?");
+                if (delete_warning == true) {
+                    $.ajax({
+                        type: "POST",
+                        url: "{% url 'board:cmt_delete' %}",
+                        data: {
+                            pk: "{{board.id}}",
+                            cmt_id: id,
+                            csrfmiddlewaretoken: "{{csrf_token}}",
+                        },
+                        success: function (response) {
+                            if (response.msg == "no") {
+                                alert("댓글을 삭제할 권한이 없습니다.")
+                            }
+                            else {
+                                $("#cmt_count").html(response.cmt_count);
+                                $("#title_cmt_count").html(response.cmt_count);
+                                $("[id*=" + id + "]").fadeOut(400, function () { $(this).remove(); });
+                                $("button").removeAttr("disabled");
+                                if (response.Pid != "") {
+                                    $("#" + response.Pid + "recmt_count").html(response.recmt_count);
+                                }
+                            }
+                        },
+                    });
+                }
+            }
+        }
+    </script>
+    <div class="write">
+        {% if request.user.is_authenticated %}
+        <textarea id="cmt_content" placeholder="댓글을 입력해주세요."></textarea>
+        <button onclick="cmt_create()">등록</button>
+        <script>
+            function cmt_create() {
+                if ($('#cmt_content').val().trim() == "") { alert('내용을 입력해주세요.'); }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: "{% url 'board:cmt_create' %}",
+                        data: {
+                            pk: "{{board.id}}",
+                            content: $("#cmt_content").val(),
+                            csrfmiddlewaretoken: '{{csrf_token}}',
+                        },
+                        success: function (response) {
+                            if (response.msg == "notlogin") {
+                                notlogin()
+                            } else {
+                                $("#cmt_count").html(response.cmt_count);
+                                $("#title_cmt_count").html(response.cmt_count);
+                                $('#cmt_content').val("");
+                                $("#cmt_list").append(
+                                    "<li id='" + response.cmt_id + "'>" +
+                                    "<p style='white-space:pre-wrap;' id='" + response.cmt_id + "content'>" + response.content + "</p>" +
+                                    "<div class='cmt_sub'><i class='fa-regular fa-clock' style='margin:0;'></i> " + response.date_str +
+                                    " <button id='" + response.cmt_id + "recmt' onclick='recmt_create(" + response.cmt_id + ")'>" +
+                                    "<i class='fa-regular fa-comment'></i> <span id='" + response.cmt_id + "recmt_count'> 0</span>" +
+                                    "</button><span id='" + response.cmt_id + "custom'>" +
+                                    "<button onclick=cmt_custom('update'" + ",'" + response.cmt_id + "')>수정</button>" +
+                                    " <button onclick=cmt_custom('delete'" + ",'" + response.cmt_id + "')>삭제</button>" +
+                                    "</span></div></li>"
+                                )
+                                $("#" + response.cmt_id).hide().fadeIn(400)
+                            }
+                        },
+                    })
+                }
+            };
+        </script>
+        {% else %}
+        <textarea id="cmt_content" placeholder="댓글을 입력해주세요." onclick="notlogin()"></textarea>
+        <button onclick="notlogin()">등록</button>
+        <script>
+            function notlogin() {
+                alert('로그인이 필요한 기능입니다.')
+            }
+        </script>
+        {% endif %}
+    </div>
+</section>
+{% endblock board %}

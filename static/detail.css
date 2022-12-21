@@ -1,0 +1,189 @@
+article {
+    height: 100%;
+    box-shadow: #0000001a 0 0 8px;
+    border-radius: 8px;
+}
+
+section#detail {
+    background: #fff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 10px;
+}
+
+section#detail h1 {
+    margin: 0;
+    font-size: 1.9rem;
+}
+
+section#detail .title_sub {
+    margin-top: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 1.3rem;
+    color: #999;
+}
+
+section#detail .title_sub i {
+    margin-left: 0.6rem;
+}
+
+section#detail .title_sub #custom {
+    float: right;
+}
+
+section#detail .title_sub span button {
+    border-radius: 8px;
+    border: 1px solid #bfbfbf;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #999;
+}
+
+section#detail .title_sub span button a {
+    color: #999;
+}
+
+section#detail .title_sub span button:hover,
+section#detail .title_sub span button a:hover {
+    transition: 0.5s;
+    color: #606060;
+}
+
+section#detail .content {
+    padding-top: 10px;
+    margin-bottom: 10px;
+}
+
+section#detail .content p {
+    margin: 0;
+}
+
+
+section#detail #join {
+    margin-top: 10px;
+}
+
+section#detail #join button {
+    background: inherit;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    margin-left: 5px;
+}
+
+section#detail #join #like {
+    margin: 0;
+}
+
+section#detail #join button:hover {
+    color: #606060;
+    transition: 0.5s;
+}
+
+section#comment {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-size: 1.4rem;
+    background: #fff;
+}
+
+section#comment .write {
+    display: flex;
+    flex-direction: row;
+    border-top: 1px solid #e5e5e5;
+    padding: 10px;
+    background: #f1f1f1;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+section#comment textarea {
+    width: 90%;
+    height: 6rem;
+    padding: 10px;
+    resize: none;
+    border-radius: 8px;
+    box-shadow: #0000001a 0 0 8px;
+}
+
+section#comment .write button {
+    width: 10%;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: #0000001a 0 0 8px;
+    margin-left: 1rem;
+    cursor: pointer;
+}
+
+section#comment .write button:hover {
+    transition: 0.5s;
+    color: #838383;
+}
+
+section#comment p {
+    margin: 0;
+}
+
+section#comment #cmt_list li {
+    padding: 10px;
+    border-top: 1px solid #f1f1f1;
+}
+
+section#comment #cmt_list li .cmt_sub {
+    font-size: 1.2rem;
+    color: #999;
+    margin-top: 5px;
+}
+
+section#comment [id$="recmt"] {
+    background: inherit;
+    color: #999;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 3px;
+}
+
+section#comment [id$="recmt"]:hover {
+    transition: 0.5s;
+    color: #606060;
+}
+
+section#comment #cmt_list li div span {
+    float: right;
+}
+
+section#comment #cmt_list li div span[id$="_count"] {
+    float: none;
+}
+
+section#comment #cmt_list li div span button {
+    border-radius: 8px;
+    border: 1px solid #bfbfbf;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #999;
+}
+
+section#comment #cmt_list li div span button:hover {
+    transition: 0.5s;
+    color: #606060;
+}
+
+section#comment #recmtzone div {
+    margin-top: 5px;
+    font-size: 1.2rem;
+}
+
+section#comment [id$="re)"] {
+    padding-left: 2rem !important;
+    background: #f8f8f8;
+}
+
+@media screen and (max-width: 768px) {
+    section#comment .write div {
+        width: 20%;
+    }
+}

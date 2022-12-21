@@ -1,0 +1,81 @@
+#form #main {
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: #0000001a 0 0 8px;
+}
+
+#main select {
+    width: 15%;
+    height: 5rem;
+    text-align: center;
+}
+
+#form #id_title {
+    width: 80%;
+    font-size: 1.6rem;
+    height: 5rem;
+    padding-left: 10px;
+}
+
+.note-toolbar {
+    background: #fbfbfb;
+    border: none;
+    border-top: 1px solid #f1f1f1;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.note-editor.note-frame {
+    border: none;
+}
+
+.note-editable {
+    color: #606060;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #fff;
+}
+
+.note-editor.note-airframe .note-statusbar,
+.note-editor.note-frame .note-statusbar {
+    background: #fff;
+    border-top: 1px solid #f1f1f1;
+    border-radius: 8px;
+}
+
+#form .buttons {
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+#form #done,
+#form #cancel {
+    color: #606060;
+    background: #fff;
+    width: 8rem;
+    height: 4rem;
+    cursor: pointer;
+    border-radius: 8px;
+    box-shadow: #0000001a 0 0 8px;
+    margin-right: 1rem;
+}
+
+#form #cancel:hover,
+#form #done:hover {
+    transition: 0.5s;
+    color: #838383;
+}
+
+@media screen and (max-width: 768px) {
+    #form .sub {
+        width: 100%;
+    }
+
+    aside {
+        display: none;
+    }
+
+    article {
+        margin: 0;
+    }
+}
